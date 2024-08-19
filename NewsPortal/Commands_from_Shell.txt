@@ -1,0 +1,46 @@
+>>> from news.models import *
+>>> user1 = User.objects.create_user(username='user1', password='password1')
+>>> user2 = User.objects.create_user(username='user2', password='password2')
+
+>>> author1 = Author.objects.create(full_name='Иванов Иван Иванович', user=user1, age=34, email='ivanov@yandex.ru')  
+>>> author2 = Author.objects.create(full_name='Петров Петр Петрович', user=user2, age=27, email='petrov@gmail.com')
+
+>>> politics = Category.objects.create(name='PO')
+>>> kulture = Category.objects.create(name='KU')
+>>> showbiz = Category.objects.crate(name='SH')
+>>> economy = Category.objects.create(name='EC')
+
+>>> article1 = Post.objects.create(author=author1, post_type='AR', name='Первая статья', post='Здесь должен быть текст первой статьи') 
+>>> article2 = Post.objects.create(author=author2, post_type='AR', name='Вторая статья', post='Здесь должен быть текст второй статьи')  
+
+>>> article1 = Post.objects.create(author=author1, post_type='AR', name='Первая статья', post='Здесь должен быть текст первой статьи') 
+>>> article2 = Post.objects.create(author=author2, post_type='AR', name='Вторая статья', post='Здесь должен быть текст второй статьи')  
+>>> news1 = Post.objects.create(author=author1, post_type='NW', name='Первая новость', post='Здесь должен быть текст первой новости')
+
+>>> article1.category.add(politics)
+>>> article2.category.add(economy) 
+>>> news1.category.add(showbiz, politics)
+
+>>> comment1 = Comment.objects.create(post=article1, user=user2, text='Коментарий к первой статье') 
+>>> comment2 = Comment.objects.create(post=article2, user=user1, text='Коментарий ко второй статье') 
+>>> comment3 = Comment.objects.create(post=news1, user=user2, text='Коментарий к первой новости')    
+>>> comment4 = Comment.objects.create(post=news1, user=user2, text='Дополнение коментария к новости') 
+
+>>> article1.like()
+>>> article1.dislike() 
+>>> article2.like()
+>>> comment2.like()
+>>> author1.update_rating()
+>>> author2.update_rating()
+
+>>> Author.objects.order_by('-rating').values('full_name','rating').first()
+
+>>> Post.objects.order_by('-rating').values('time','rating','name').first() 
+>>> best_post = Post.objects.order_by('-rating').first() 
+>>> best_post.preview()
+
+>>> Comment.objects.filter(post=best_post).values('time', 'user', 'rating', 'text')   
+
+
+
+
