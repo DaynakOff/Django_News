@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
+from django.core.validators import MinValueValidator
 from datetime import datetime
 
 
@@ -44,6 +46,9 @@ class Category(models.Model):
 	]
 	name = models.CharField(max_length=2, choices=CATEGORY_CHOICES, unique=True)
 
+	def __str__(self):
+		return dict(self.CATEGORY_CHOICES)[self.name]
+
 	pass
 
 
@@ -73,6 +78,8 @@ class Post(models.Model):
 	def preview(self):
 		return self.post[:124] + '...' if len(self.post) > 124 else self.post
 
+	def get_absolute_url(self):
+		return reverse('post_detail', args=[str(self.id)])
 
 	pass
 
