@@ -40,47 +40,31 @@ class PostSearch(ListView):
 		return context
 
 
-class NewsCreate(CreateView):
+class PostCreate(CreateView):
 	form_class = PostForm
 	model = Post
 	template_name = 'post_edit.html'
 
 	def form_valid(self, form):
 		news = form.save(commit=False)
-		form.instance.post_type = 'NW'
+		form.instance.post_type = 'NW' if self.request.path.startswith('/news/') else 'AR'
+		form.instance.author = self.request.user.author
 		return super().form_valid(form)
 
 
-class NewsUpdate(UpdateView):
+class PostUpdate(UpdateView):
 	form_class = PostForm
 	model = Post
 	template_name = 'post_edit.html'
 
 
-class NewsDelete(DeleteView):
+class PostDelete(DeleteView):
 	model = Post
 	template_name = 'post_delete.html'
 	success_url = reverse_lazy('posts_list')
 
 
-class ArticlesCreate(CreateView):
-	form_class = PostForm
-	model = Post
-	template_name = 'post_edit.html'
-
-	def form_valid(self, form):
-		news = form.save(commit=False)
-		form.instance.post_type = 'AR'
-		return super().form_valid(form)
 
 
-class ArticlesUpdate(UpdateView):
-	form_class = PostForm
-	model = Post
-	template_name = 'post_edit.html'
 
 
-class ArticlesDelete(DeleteView):
-	model = Post
-	template_name = 'post_delete.html'
-	success_url = reverse_lazy('posts_list')
