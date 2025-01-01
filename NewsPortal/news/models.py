@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.forms import UserCreationForm
+from django import forms
 from django.core.validators import MinValueValidator
 from datetime import datetime
 
@@ -12,6 +14,8 @@ class Author(models.Model):
 	email = models.EmailField(blank=True, null=True)
 	rating = models.FloatField(default=0.0)
 
+	def __str__(self):
+		return self.user.username
 
 	def update_rating(self):
 		post_rating = self.post_set.aggregate(total=models.Sum('rating'))['total'] or 0
@@ -19,10 +23,12 @@ class Author(models.Model):
 
 		author_comments_rating = self.user.comment_set.aggregate(total=models.Sum('rating'))['total'] or 0
 
-		post_comments_rating = Comment.objects.filter(post__author=self).aggregate(total=models.Sum('rating'))['total'] or 0
+		post_comments_rating = Comment.objects.filter(post__author=self).aggregate(total=models.Sum('rating'))[
+			                       'total'] or 0
 
 		self.rating = post_rating + author_comments_rating + post_comments_rating
 		self.save()
+
 	pass
 
 
@@ -97,14 +103,29 @@ class Comment(models.Model):
 	time = models.DateTimeField(auto_now_add=True)
 	rating = models.IntegerField(default=0)
 
-
 	def like(self):
 		self.rating += 1
 		self.save()
-
 
 	def dislike(self):
 		self.rating -= 1
 		self.save()
 
 	pass
+
+
+class BaseRegisterForm(UserCreationForm):
+	email = forms.EmailField(label='Email')
+	first_name = forms.CharField(label='Имя')
+	last_name = forms.CharField(label='Фамилия')
+
+	class Meta:
+		model = User
+		fields = ("username",
+		          "first_name",
+		          "last_name",
+		          "email",
+		          "password1",
+		          "password2",)
+
+

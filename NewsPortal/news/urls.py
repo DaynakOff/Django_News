@@ -1,7 +1,10 @@
 from django.urls import path
+from django.urls import include
+from django.contrib.auth.views import LoginView, LogoutView
 from .views import (
-	PostList, PostDetail, PostSearch, PostCreate, PostUpdate, PostDelete
+	PostList, PostDetail, PostSearch, PostCreate, PostUpdate, PostDelete, IndexView, BaseRegisterView
 )
+from .views import upgrade_me
 
 
 urlpatterns = [
@@ -14,5 +17,10 @@ urlpatterns = [
 	path('articles/create/', PostCreate.as_view(), name='news_create'),
 	path('articles/<int:pk>/edit/', PostUpdate.as_view(), name='news_edit'),
 	path('articles/<int:pk>/delete/', PostDelete.as_view(), name='news_delete'),
+	path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+	path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
+	path('index/', IndexView.as_view()),
+	path('signup/', BaseRegisterView.as_view(template_name='signup.html'), name='signup'),
+	path('upgrade/', upgrade_me, name='upgrade')
 
 ]
