@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import (
 ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
 from .models import Post, BaseRegisterForm, Author
 from .filters import PostFilter
@@ -64,7 +64,7 @@ class PostSearch(ListView):
 		return context
 
 
-class PostCreate(CreateView):
+class PostCreate(LoginRequiredMixin,UserPassesTestMixin, CreateView):
 	form_class = PostForm
 	model = Post
 	template_name = 'post_edit.html'
@@ -78,18 +78,29 @@ class PostCreate(CreateView):
 		# form.instance.author = self.request.user.author после аутентификации автора
 		return super().form_valid(form)
 
+	def test_func(self):
+		return self.request.user.groups.filter(name='Authors').exists()
 
-class PostUpdate(LoginRequiredMixin, UpdateView):
+
+class PostUpdate(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 	form_class = PostForm
 	model = Post
 	template_name = 'post_edit.html'
 	login_url = '/login/'
 
+	def test_func(self):
+		post = self.get_object()
+		return self.request.user == post.author.user or self.request.user.is_superuser
 
-class PostDelete(DeleteView):
+
+class PostDelete(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 	model = Post
 	template_name = 'post_delete.html'
 	success_url = reverse_lazy('posts_list')
+
+	def test_func(self):
+		post = self.get_object()
+		return self.request.user == post.author.user or self.request.user.is_superuser
 
 
 class BaseRegisterView(CreateView):
