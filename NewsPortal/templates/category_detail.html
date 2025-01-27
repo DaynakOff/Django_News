@@ -1,0 +1,37 @@
+{% extends 'flatpages/default.html' %}
+
+
+{% load custom_tags %}
+
+{% block title %}
+{{ category.name }}
+{% endblock title %}
+
+{% block content %}
+<h1>{{ category.name }}</h1>
+
+{% if is_subscribed %}
+    <p>Вы подписаны на рассылку новостей в категории "{{ category }}.</p>
+    <a href="{% url 'toggle_subscription' category.id user.id %}?subscribe=true">Отписаться от рассылки</a>
+
+{% else %}
+  <p>Вы не подписаны на рассылку новостей в категории "{{ category }}".</p>
+  <a href="{% url 'toggle_subscription' category.id user.id %}?subscribe=true">Подписаться на рассылку</a>
+
+{% endif %}
+
+<h2>Новости в категории "{{ category }}</h2>
+<ul>
+    {% for post in posts %}
+    <li>
+        <h3><a href="{{ post.get_absolute_url }}">{{ post.name }}</a> </h3>
+        <p><strong>Дата публикации:</strong> {{ post.time|date:"d.m.Y" }}</p>
+        <div>
+            {{ post.preview }}
+        </div>
+    </li>
+{% empty %}
+    <li>Нет новостей в этой категории.</li>
+    {% endfor %}
+</ul>
+{% endblock content %}

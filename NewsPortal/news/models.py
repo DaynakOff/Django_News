@@ -3,8 +3,6 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from django.core.validators import MinValueValidator
-from datetime import datetime
 
 
 class Author(models.Model):
@@ -51,6 +49,8 @@ class Category(models.Model):
 		(trevel, 'Путешествия')
 	]
 	name = models.CharField(max_length=2, choices=CATEGORY_CHOICES, unique=True)
+	subscribers = models.ManyToManyField(User, related_name='subsribed_categories', blank=True)
+
 
 	def __str__(self):
 		return dict(self.CATEGORY_CHOICES)[self.name]

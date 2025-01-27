@@ -1,10 +1,9 @@
 from django.urls import path
-from django.urls import include
 from django.contrib.auth.views import LoginView, LogoutView
 from .views import (
-	PostList, PostDetail, PostSearch, PostCreate, PostUpdate, PostDelete, IndexView, BaseRegisterView
+	PostList, PostDetail, PostSearch, PostCreate, PostUpdate, PostDelete, IndexView, BaseRegisterView, category_detail
 )
-from .views import upgrade_me
+from .views import upgrade_me, toggle_subscription
 
 
 urlpatterns = [
@@ -21,6 +20,8 @@ urlpatterns = [
 	path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
 	path('index/', IndexView.as_view()),
 	path('signup/', BaseRegisterView.as_view(template_name='signup.html'), name='signup'),
-	path('upgrade/', upgrade_me, name='upgrade')
+	path('upgrade/', upgrade_me, name='upgrade'),
+	path('category/<int:category_id>/', category_detail, name='category_detail'),
+	path('category/<int:category_id>/toggle_subscription/<int:user_id>/', toggle_subscription, name='toggle_subscription'),
 
 ]

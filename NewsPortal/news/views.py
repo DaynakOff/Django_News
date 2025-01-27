@@ -4,13 +4,13 @@ ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import PostForm
-from .models import Post, BaseRegisterForm, Author
+from .models import Post, BaseRegisterForm, Author, Category, User
 from .filters import PostFilter
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-
+from django.shortcuts import redirect, get_object_or_404, render
+from django.utils import timezone
 
 # Create your views here.
 
@@ -75,10 +75,21 @@ class PostCreate(LoginRequiredMixin,UserPassesTestMixin, CreateView):
 		news.author.full_name = f"{news.author.user.first_name} {news.author.user.last_name}"
 		news.author.save()
 		news.post_type = 'NW' if self.request.path.startswith('/news/') else 'AR'
-		# form.instance.author = self.request.user.author после аутентификации автора
+		news.save()
+		category_ids = self.request.POST.getlist('category')
+		news.category.set(Category.objects.filter(id__in=category_ids))
 		return super().form_valid(form)
 
+
 	def test_func(self):
+		# today = timezone.now().date()
+		# yesterday = today - timezone.timedelta(days=1)
+		# user_posts_today = Post.objects.filter(author=self.request.user.author, time__date=today).count()
+		# user_posts_yesterday = Post.objects.filter(author=self.request.user.author, time__date=yesterday).count()
+		#
+		# if user_posts_today + user_posts_yesterday >= 3:
+		# 	return False
+
 		return self.request.user.groups.filter(name='Authors').exists()
 
 
@@ -108,3 +119,45 @@ class BaseRegisterView(CreateView):
 	form_class = BaseRegisterForm
 	success_url = '/news'
 
+	def form_valid(self, form):
+		user = form.save()
+		Author.objects.create(user=user)
+		return super().form_valid(form)
+
+
+def category_detail(request, category_id):
+	category = get_object_or_404( Category, id=category_id)
+	posts = Post.objects.filter(category=category).order_by('-time')
+	user = request.user
+
+	is_subscribed = user in category.subscribers.all()
+
+	context = {
+		'category': category,
+		'posts': posts,
+		'is_subscribed': is_subscribed,
+	}
+
+	return render(request, 'category_detail.html', context)
+
+
+def toggle_subscription(request, category_id, user_id):
+	category = get_object_or_404(Category, id=category_id)
+	user = get_object_or_404(User, id=user_id)
+
+	if user in category.subscribers.all():
+		category.subscribers.remove(user)
+	else:
+		category.subscribers.add(user)
+
+	return redirect('category_detail', category_id=category_id)
+
+
+def create_authors_for_authors_group(request):
+	authors_group = Group.objects.get(name='Authors')
+	users_without_author = User.objects.filter(groups=authors_group).exclude(author__isnull=False)
+
+	for user in users_without_author:
+		Author.objects.create(user=user)
+
+	return redirect('your_redirect_url')
