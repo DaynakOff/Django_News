@@ -1,30 +1,53 @@
+from datetime import timedelta
 import logging
+
 
 from django.conf import settings
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
-from .models import Post
-from .signal import send_new_post_notification
-from datetime import datetime, timedelta
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
+from NewsPortal.settings import BASE_URL
+from news.models import Post, Category
 
 logger = logging.getLogger(__name__)
 
 
-def get_new_posts():
-	last_week = datetime.now() - timedelta(days=7)
-	new_posts = Post.objects.filter(time__gte=last_week)
-	return new_posts
+# наша задача по выводу текста на экран
+def my_job():
+	today = timezone.now()
+	last_week = today - timedelta(weeks=1)
+	posts = Post.objects.filter(time__gte=last_week)
+	categories_names = set(posts.values_list('category__name', flat=True))
+	subscribers_emails = set(Category.objects.filter(name__in=categories_names).values_list('subscribers__email', flat=True))
+
+	html_content = render_to_string(
+		'send_weekly_posts.html',
+		{
+			'posts': posts,
+			'BASE_URL': BASE_URL,
+		},
+
+	)
+
+	msg = EmailMultiAlternatives(
+		subject='Список последних публикаций на сайте за неделю',
+		body='',
+		from_email=settings.DEFAULT_FROM_EMAIL,
+		to=list(subscribers_emails),
+	)
+
+	msg.attach_alternative(html_content, "text/html")
+	msg.send()
 
 
-def send_weekly_newsletter():
-	new_posts = get_new_posts()
-	for post in new_posts:
-		send_new_post_notification(post)
+
 
 
 # функция, которая будет удалять неактуальные задачи
@@ -42,14 +65,14 @@ class Command(BaseCommand):
 
 		# добавляем работу нашему задачнику
 		scheduler.add_job(
-			send_weekly_newsletter,
-			trigger=CronTrigger(day_of_week='mon', hour='08', minute='00'),
+			my_job,
+			trigger=CronTrigger(second="*/10"),
 			# То же, что и интервал, но задача тригера таким образом более понятна django
-			id="send_weekly_newsletter",  # уникальный айди
+			id="my_job",  # уникальный айди
 			max_instances=1,
 			replace_existing=True,
 		)
-		logger.info("Added weekly job: 'send_weekly_newsletter'.")
+		logger.info("Added job 'my_job'.")
 
 		scheduler.add_job(
 			delete_old_job_executions,

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Sends</title>
+</head>
+<body>
+<h2>Публикации за неделю:</h2>
+{% for post in posts %}
+<li><a href="{{BASE_URL}}{{post.get_absolute_url}}">{{ post.name }}</a></li>
+{% endfor %}
+</body>
+</html>

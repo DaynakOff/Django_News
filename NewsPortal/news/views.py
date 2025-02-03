@@ -82,13 +82,13 @@ class PostCreate(LoginRequiredMixin,UserPassesTestMixin, CreateView):
 
 
 	def test_func(self):
-		# today = timezone.now().date()
-		# yesterday = today - timezone.timedelta(days=1)
-		# user_posts_today = Post.objects.filter(author=self.request.user.author, time__date=today).count()
-		# user_posts_yesterday = Post.objects.filter(author=self.request.user.author, time__date=yesterday).count()
-		#
-		# if user_posts_today + user_posts_yesterday >= 3:
-		# 	return False
+		today = timezone.now().date()
+		yesterday = today - timezone.timedelta(days=1)
+		user_posts_today = Post.objects.filter(author=self.request.user.author, time__date=today).count()
+		user_posts_yesterday = Post.objects.filter(author=self.request.user.author, time__date=yesterday).count()
+
+		if user_posts_today + user_posts_yesterday >= 3:
+			return False
 
 		return self.request.user.groups.filter(name='Authors').exists()
 

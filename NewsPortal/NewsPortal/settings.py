@@ -144,7 +144,8 @@ STATIC_URL = 'static/'
 
 LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = '/logout/'
-LOGIN_REDIRECT_URL = 'posts_list'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_REDIRECT_URL = 'account_login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -184,4 +185,7 @@ EMAIL_HOST_USER = 'a.dainakoff'
 EMAIL_HOST_PASSWORD = 'ntcrykgovcemyasz'
 EMAIL_USE_SSL = True
 
-BASE_URL = 'http://127.0.0.1:8000/'
+BASE_URL = "http://127.0.0.1:8000/"
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+

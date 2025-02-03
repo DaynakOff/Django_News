@@ -18,7 +18,7 @@ urlpatterns = [
 	path('articles/<int:pk>/delete/', PostDelete.as_view(), name='news_delete'),
 	path('login/', LoginView.as_view(template_name='login.html'), name='login'),
 	path('logout/', LogoutView.as_view(template_name='logout.html'), name='logout'),
-	path('index/', IndexView.as_view()),
+	path('index/', IndexView.as_view(), name='index'),
 	path('signup/', BaseRegisterView.as_view(template_name='signup.html'), name='signup'),
 	path('upgrade/', upgrade_me, name='upgrade'),
 	path('category/<int:category_id>/', category_detail, name='category_detail'),
