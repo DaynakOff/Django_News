@@ -30,7 +30,7 @@ def send_new_post_notification(post_id):
 					fail_silently=False,
 				)
 
-
+@shared_task
 def send_weekly_news_notification():
 	today = timezone.now()
 	last_week = today - timedelta(weeks=1)
