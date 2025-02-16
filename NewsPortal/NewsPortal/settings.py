@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+import logging
+import logging.handlers
+from django.utils.log import DEFAULT_LOGGING
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -195,3 +198,112 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files'),
+    }
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(pathname)s %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+        'errors': {
+            'format': '%(levelname)s %(asctime)s %(message)s %(pathname)s'
+        },
+        'security': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
+        },
+        'email': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'general': {
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'simple',
+            'filename': 'general.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+        },
+        'errors': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'errors',
+            'filename': 'errors.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+        },
+        'security': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'security',
+            'filename': 'security.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+        },
+        'email': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'email',
+            'include_html': False,
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'general'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['errors', 'email'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['errors', 'email'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['errors'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['errors'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
