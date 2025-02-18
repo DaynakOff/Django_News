@@ -1,4 +1,6 @@
+from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import (
 ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 )
@@ -13,6 +15,7 @@ from django.shortcuts import redirect, get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from django.utils.translation import gettext as _
 
 # Create your views here.
 
@@ -173,3 +176,10 @@ def create_authors_for_authors_group(request):
 		Author.objects.create(user=user)
 
 	return redirect('your_redirect_url')
+
+
+class Index(View):
+	def get(self, request):
+		string = _('Hello, World!')
+
+		return HttpResponse(string)

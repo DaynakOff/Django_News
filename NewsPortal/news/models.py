@@ -4,6 +4,8 @@ from django.db import models
 from django.urls import reverse
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.utils.translation import gettext as _
+from django.utils.translation import pgettext_lazy
 
 
 class Author(models.Model):
@@ -68,7 +70,7 @@ class Post(models.Model):
 	]
 	author = models.ForeignKey(Author, on_delete=models.CASCADE)
 	post_type = models.CharField(max_length=2, choices=POST_TYPE)
-	name = models.CharField(max_length=255)
+	name = models.CharField(max_length=255, help_text=_('post title'))
 	post = models.TextField()
 	time = models.DateTimeField(auto_now_add=True)
 	rating = models.IntegerField(default=0)
@@ -132,5 +134,3 @@ class BaseRegisterForm(UserCreationForm):
 		          "email",
 		          "password1",
 		          "password2",)
-
-
